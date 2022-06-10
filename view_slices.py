@@ -5,6 +5,14 @@ import nibabel as nib
 from matplotlib.widgets import Slider, Button
 
 def view_slices(mri_shape, mri_data, view):
+    ''' 
+    Outputs a figure where the slices of 1 view (sagittal, coronal or axial) can be viewed 
+
+    Arguments: 
+    mri_shape -- shape of the MRI array
+    mri_data --  MRI array
+    view -- string containing the view to display
+    '''
     plt.style.use('dark_background')
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
@@ -50,7 +58,13 @@ def view_slices(mri_shape, mri_data, view):
 
 
 def multi_view(mri_shape, mri_data):
+    ''' 
+    Outputs a figure where the slices of the 3 views (sagittal, coronal or axial) can be viewed 
 
+    Arguments: 
+    mri_shape -- shape of the MRI array
+    mri_data --  MRI array
+    '''
     max_slice_sag = mri_shape[0]
     max_slice_cor = mri_shape[1]
     max_slice_axi = mri_shape[2]
@@ -122,17 +136,33 @@ def multi_view(mri_shape, mri_data):
 
 
 def windowing(mri_hu, wl, ww):
-        min_window = wl - ww // 2
-        max_window = wl + ww // 2
-        mri_window = mri_hu.copy()
-        mri_window [mri_window  < min_window] = min_window
-        mri_window [mri_window  > max_window] = max_window
 
-        return mri_window
+    ''' 
+    Computes windowing for MRI
+    Arguments: 
+    mri_hu -- MRI converted to HU
+    wl -- window level
+    ww -- window width
+    Returns:
+    mri_window -- MRI with windowing applied
+    '''
+    min_window = wl - ww // 2
+    max_window = wl + ww // 2
+    mri_window = mri_hu.copy()
+    mri_window [mri_window  < min_window] = min_window
+    mri_window [mri_window  > max_window] = max_window
+    return mri_window
 
 
 def view_slices_window(mri_shape, mri_hu, view):
+    ''' 
+    Outputs a figure where the slices of 1 view (sagittal, coronal or axial) can be viewed and windowing can be applied
 
+    Arguments: 
+    mri_shape -- shape of the MRI array
+    mri_hu -- MRI converted to HU
+    view -- string containing the view to display
+    '''
     plt.style.use('dark_background')
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
@@ -204,7 +234,13 @@ def view_slices_window(mri_shape, mri_hu, view):
 
 
 def multi_view_window(mri_shape, mri_hu):
-    
+    ''' 
+    Outputs a figure where the slices of the 3 views (sagittal, coronal or axial) can be viewed 
+
+    Arguments: 
+    mri_shape -- shape of the MRI array
+    mri_hu -- MRI converted to HU
+    '''
     wl_init = 150
     ww_init = 300
     

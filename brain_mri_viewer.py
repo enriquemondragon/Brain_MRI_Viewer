@@ -10,16 +10,40 @@ from matplotlib.widgets import Slider, Button
 from view_slices import *
 
 def extract_info(mri):
+    ''' 
+    Extract general information from MRI 
+
+    Arguments: 
+    mri -- MRI NifTi file
+
+    Returns:
+    mri_header --contains general information from the MRI
+    mri_affine -- affine matrix
+    mri_coord -- MRI coordinate system
+    mri_data --  MRI array
+    '''
     mri_header = mri.header
     mri_affine = mri.affine
     mri_coord = nib.aff2axcodes(mri_affine)
     x, y, z = mri_coord
     mri_data = mri.get_fdata()
     return mri_header, mri_affine, mri_coord, mri_data
-    
+
 
 def check_coord(mri_coord, mri_data):
-    # types of coordinate systems: RAS, LAS, LSA, ALS, RSP, LPS, LIP
+    ''' 
+    Check the MRI's coordinate system and transforms it to RAS in case it is other
+
+    Arguments: 
+    mri_coord -- MRI coordinate system
+    mri_data --  MRI array
+
+    Returns:
+    mri_data --  MRI array transformed to RAS coordinate system
+    mri_shape -- shape of the MRI array in RAS coordinate system
+
+    Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP
+    '''
     if mri_coord == ('L', 'I', 'P'):
         mri_data = np.flip(mri_data, axis=0) # change L to R (RIP)
         mri_data = np.flip(mri_data, axis=1) # change I to S (RSP)
@@ -56,6 +80,15 @@ def check_coord(mri_coord, mri_data):
 
 
 def display_info(mri_header, mri_affine, mri_coord, mri_data):
+    ''' 
+    Display general information from the MRI
+
+    Arguments: 
+    mri_header --contains general information from the MRI
+    mri_affine -- affine matrix
+    mri_coord -- MRI coordinate system
+    mri_data --  MRI array
+    '''
     # Display MRI general info
     print("""
     ############################
@@ -79,7 +112,13 @@ def display_info(mri_header, mri_affine, mri_coord, mri_data):
 
 
 def visualize_img(mri_data, mri_shape):
-    # Visualizing MRI's mid slices
+    '''
+    Outputs an image of the mid slices of the MRI in each view (sagittal, coronal and axial)
+
+    Arguments:
+    mri_data --  MRI array
+    mri_shape -- shape of the MRI array
+    '''
 
     sag_mid = mri_data[mri_shape[0]//2, :, :]
     cor_mid = mri_data[:, mri_shape[1]//2, :]
@@ -115,7 +154,6 @@ def main():
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
 
-    ### testing ####
     if args.window and args.img == False:
         print("\n")
         print('MRI slope: ', mri.dataobj.slope) 
@@ -126,10 +164,20 @@ def main():
 
 
         def hounsfield(mri, mri_data):
+            '''
+            Transforms MRI to Hounsfield units (HU) by rescaling it
+
+            Arguments:
+            mri -- MRI NifTi file
+            mri_data --  MRI array
+
+            Returns:
+            mri_hu -- MRI converted to HU
+            '''
             intercept = mri.dataobj.inter
             slope = mri.dataobj.slope
-            hu_mri = rescale(mri_data, slope, intercept)
-            return hu_mri
+            mri_hu = rescale(mri_data, slope, intercept)
+            return mri_hu
 
 
         mri_hu = hounsfield(mri, mri_data)
