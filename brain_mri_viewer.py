@@ -1,4 +1,5 @@
 #from re import M
+from re import M
 import numpy as np
 import argparse
 import os
@@ -15,6 +16,7 @@ def extract_info(mri):
     x, y, z = mri_coord
     mri_data = mri.get_fdata()
     return mri_header, mri_affine, mri_coord, mri_data
+    
 
 def check_coord(mri_coord, mri_data):
     # types of coordinate systems: RAS, LAS, LSA, ALS, RSP, LPS, LIP
@@ -52,6 +54,7 @@ def check_coord(mri_coord, mri_data):
 
     return mri_data, mri_shape
 
+
 def display_info(mri_header, mri_affine, mri_coord, mri_data):
     # Display MRI general info
     print("""
@@ -65,7 +68,7 @@ def display_info(mri_header, mri_affine, mri_coord, mri_data):
     print("\n")
     print('MRI coordinate system\n', mri_coord)
     print("\n")
-    #print('MRI data\n', mri_1_data)
+    # print('MRI data\n', mri_data)
     # print("\n")
     print('MRI data type: ', type(mri_data))
     print('MRI dtype: ', mri_data.dtype)
@@ -73,6 +76,7 @@ def display_info(mri_header, mri_affine, mri_coord, mri_data):
     print('max voxel intensity: ', np.max(mri_data))
     print('MRI shape: ', mri_data.shape)
     print('MRI dim: ', mri_data.ndim)
+
 
 def visualize_img(mri_data, mri_shape):
     # Visualizing MRI's mid slices
@@ -94,27 +98,52 @@ def visualize_img(mri_data, mri_shape):
     plt.show()
     return
 
+
 def main():
     parser = argparse.ArgumentParser(description=' ################ Brain MRI Viewer ################', usage='%(prog)s [--input] [options]')
     parser.add_argument('-in', '--input', type=str, required=True, help='MRIs file path', dest='in_path')
     parser.add_argument('-v', '--view', type=str, choices=['multiview', 'sag', 'cor', 'axi'], default='multiview', dest='view', help='select view [sag, cor, axi, multiview]')
     parser.add_argument('-img', '--image', action='store_true', dest='img', help='shows MRIs image')
+    parser.add_argument('-w', '--window', action='store_true', dest='window', help='enables the option for MRI windowing')
     # add volume option
     args = parser.parse_args()
 
     mri = nib.load(args.in_path)
-    view = args.view
+    view = args.view 
 
     mri_header, mri_affine, mri_coord, mri_data = extract_info(mri)
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
 
-    if args.img == True:
-        visualize_img(mri_data, mri_shape)
-    elif args.view != 'multiview':
-        view_slices(mri_shape, mri_data, view) # in the future add string 'sag' 'cor' 'axi' w/ arparse
+    ### testing ####
+    if args.window and args.img == False:
+        print("\n")
+        print('MRI slope: ', mri.dataobj.slope) 
+        print('MRI interception: ', mri.dataobj.inter)
+
+        def rescale(a ,x, b):
+            return a * x + b
+
+
+        def hounsfield(mri, mri_data):
+            intercept = mri.dataobj.inter
+            slope = mri.dataobj.slope
+            hu_mri = rescale(mri_data, slope, intercept)
+            return hu_mri
+
+
+        mri_hu = hounsfield(mri, mri_data)
+        if args.view != 'multiview':
+            view_slices_window(mri_shape, mri_hu, view)
+        else:
+            multi_view_window(mri_shape, mri_hu)
     else:
-        multi_view(mri_shape, mri_data)
+        if args.img:
+            visualize_img(mri_data, mri_shape)
+        elif args.view != 'multiview':
+            view_slices(mri_shape, mri_data, view)
+        else:
+            multi_view(mri_shape, mri_data)
 
 
 if __name__ == "__main__":
