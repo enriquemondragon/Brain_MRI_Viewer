@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import nibabel as nib
 from matplotlib.widgets import Slider, Button
 
-view = 'cor' #need to change this to argparse
+#view = 'cor' #need to change this to argparse
 
-def view_slices(mri_shape, mri_data):
+def view_slices(mri_shape, mri_data, view):
+    plt.style.use('dark_background')
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
     if view == 'sag':

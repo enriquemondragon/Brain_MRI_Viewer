@@ -1,16 +1,12 @@
 #from re import M
 import numpy as np
+import argparse
+import os
+import sys
 import matplotlib.pyplot as plt
 import nibabel as nib
 from matplotlib.widgets import Slider, Button
 from view_slices import *
-
-def load_mri(): #add PATH ARGPARSE
-    #mri = nib.load('data/someones_anatomy.nii.gz')
-    mri = nib.load('data/T2.nii.gz')
-    #mri = nib.load('data/template_T2.nii.gz')
-    return mri
-
 
 def extract_info(mri):
     mri_header = mri.header
@@ -52,7 +48,9 @@ def check_coord(mri_coord, mri_data):
         mri_data = np.flip(mri_data, axis=0) # change L to R (RPS)
         mri_data = np.flip(mri_data, axis=1) # change P to A (RAS)
 
-    return mri_data
+    mri_shape = np.asarray(mri_data.shape)
+
+    return mri_data, mri_shape
 
 def display_info(mri_header, mri_affine, mri_coord, mri_data):
     # Display MRI general info
@@ -76,10 +74,8 @@ def display_info(mri_header, mri_affine, mri_coord, mri_data):
     print('MRI shape: ', mri_data.shape)
     print('MRI dim: ', mri_data.ndim)
 
-def visualize_img(mri_data):
+def visualize_img(mri_data, mri_shape):
     # Visualizing MRI's mid slices
-    # convert tuple shape to array
-    mri_shape = np.asarray(mri_data.shape)
 
     sag_mid = mri_data[mri_shape[0]//2, :, :]
     cor_mid = mri_data[:, mri_shape[1]//2, :]
@@ -96,16 +92,29 @@ def visualize_img(mri_data):
     axes[1].set_title('Coronal view')
     axes[2].set_title('Axial view')
     plt.show()
-    return mri_shape
+    return
 
 def main():
-    mri = load_mri() 
+    parser = argparse.ArgumentParser(description=' ################ Brain MRI Viewer ################', usage='%(prog)s [--input] [options]')
+    parser.add_argument('-in', '--input', type=str, required=True, help='MRIs file path', dest='in_path')
+    parser.add_argument('-v', '--view', type=str, choices=['multiview', 'sag', 'cor', 'axi'], default='multiview', dest='view', help='select view [sag, cor, axi, multiview]')
+    parser.add_argument('-img', '--image', action='store_true', dest='img', help='shows MRIs image')
+    # add volume option
+    args = parser.parse_args()
+
+    mri = nib.load(args.in_path)
+    view = args.view
+
     mri_header, mri_affine, mri_coord, mri_data = extract_info(mri)
     display_info(mri_header, mri_affine, mri_coord, mri_data)
-    mri_data = check_coord(mri_coord, mri_data)
-    mri_shape = visualize_img(mri_data)
-    #view_slices(mri_shape, mri_data) # in the future add string 'sag' 'cor' 'axi' w/ arparse
-    multi_view(mri_shape, mri_data)
+    mri_data, mri_shape = check_coord(mri_coord, mri_data)
+
+    if args.img == True:
+        visualize_img(mri_data, mri_shape)
+    elif args.view != 'multiview':
+        view_slices(mri_shape, mri_data, view) # in the future add string 'sag' 'cor' 'axi' w/ arparse
+    else:
+        multi_view(mri_shape, mri_data)
 
 
 if __name__ == "__main__":
