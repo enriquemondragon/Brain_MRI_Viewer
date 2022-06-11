@@ -144,6 +144,7 @@ def main():
     parser.add_argument('-v', '--view', type=str, choices=['multiview', 'sag', 'cor', 'axi'], default='multiview', dest='view', help='select view [sag, cor, axi, multiview]')
     parser.add_argument('-img', '--image', action='store_true', dest='img', help='shows MRIs image')
     parser.add_argument('-w', '--window', action='store_true', dest='window', help='enables the option for MRI windowing')
+    parser.add_argument('-vol', '--volume', type=int, action='store', dest='volume', help='volume to display if MRI contains more than 1' )
     # add volume option
     args = parser.parse_args()
 
@@ -153,6 +154,22 @@ def main():
     mri_header, mri_affine, mri_coord, mri_data = extract_info(mri)
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
+
+    
+    if mri_header['dim'][0]==4 and args.volume==None:
+        print("\n Missing information!")
+        print(" This MRI contatins :", mri_shape[-1], "volumes")
+        print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
+        parser.print_help()
+        sys.exit()
+    elif mri_header['dim'][0]==4 and args.volume>=mri_shape[-1] or args.volume<0:
+        print("\n Invalid volume!")
+        print(" This MRI contatins :", mri_shape[-1], "volumes")
+        print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
+        parser.print_help()
+        sys.exit()
+    else:
+         mri_data=mri_data[:,:,:,args.volume]
 
     if args.window and args.img == False:
         print("\n")
