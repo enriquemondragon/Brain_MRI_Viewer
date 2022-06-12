@@ -18,7 +18,7 @@ You can clone the repository by using the command:
 
 --------
 ## Usage
-BY default when loading an MRI, you will be able to visualize all three views at the same time
+By default when loading an MRI, you will be able to visualize all three views at the same time
 
 ```
     python3 brain_mri_viewer.py --input [NifTi_file]
@@ -34,7 +34,7 @@ In you want to see only 1 view at a time, yo can specify it with the view flag
 
 ![single view](/images/cor_view.png)
 
-For applying windowing use the window flag in either cases
+For applying windowing you can use the window flag in either cases
 
 ```
     python3 brain_mri_viewer.py --input [NifTi_file] --window
