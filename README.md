@@ -1,3 +1,3 @@
-# Brain_MRI_Viewer
+# Brain MRI Viewer
 
 Code under development

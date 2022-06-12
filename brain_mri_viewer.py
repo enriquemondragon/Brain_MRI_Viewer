@@ -27,7 +27,8 @@ def extract_info(mri):
     mri_coord = nib.aff2axcodes(mri_affine)
     x, y, z = mri_coord
     mri_data = mri.get_fdata()
-    return mri_header, mri_affine, mri_coord, mri_data
+    max_voxel = np.max(mri_data)
+    return mri_header, mri_affine, mri_coord, mri_data, max_voxel
 
 
 def check_coord(mri_coord, mri_data):
@@ -145,17 +146,16 @@ def main():
     parser.add_argument('-img', '--image', action='store_true', dest='img', help='shows MRIs image')
     parser.add_argument('-w', '--window', action='store_true', dest='window', help='enables the option for MRI windowing')
     parser.add_argument('-vol', '--volume', type=int, action='store', dest='volume', help='volume to display if MRI contains more than 1' )
-    # add volume option
+    
     args = parser.parse_args()
 
     mri = nib.load(args.in_path)
     view = args.view 
 
-    mri_header, mri_affine, mri_coord, mri_data = extract_info(mri)
+    mri_header, mri_affine, mri_coord, mri_data, max_voxel = extract_info(mri)
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
 
-    
     if mri_header['dim'][0]==4 and args.volume==None:
         print("\n Missing information!")
         print(" This MRI contatins :", mri_shape[-1], "volumes")
@@ -179,7 +179,7 @@ def main():
         def rescale(a ,x, b):
             return a * x + b
 
-
+            
         def hounsfield(mri, mri_data):
             '''
             Transforms MRI to Hounsfield units (HU) by rescaling it
@@ -190,6 +190,8 @@ def main():
 
             Returns:
             mri_hu -- MRI converted to HU
+
+            note: currently not using it
             '''
             intercept = mri.dataobj.inter
             slope = mri.dataobj.slope
@@ -199,9 +201,9 @@ def main():
 
         mri_hu = hounsfield(mri, mri_data)
         if args.view != 'multiview':
-            view_slices_window(mri_shape, mri_hu, view)
+            view_slices_window(mri_shape, mri_data, view, max_voxel)
         else:
-            multi_view_window(mri_shape, mri_hu)
+            multi_view_window(mri_shape, mri_data, max_voxel)
     else:
         if args.img:
             visualize_img(mri_data, mri_shape)

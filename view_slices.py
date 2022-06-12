@@ -135,7 +135,7 @@ def multi_view(mri_shape, mri_data):
     plt.show()
 
 
-def windowing(mri_hu, wl, ww):
+def windowing(mri_data, wl, ww):
 
     ''' 
     Computes windowing for MRI
@@ -146,15 +146,18 @@ def windowing(mri_hu, wl, ww):
     Returns:
     mri_window -- MRI with windowing applied
     '''
+    # INSTEAD OF ENTERING HU MRI, LET US ENTER MRI DATA
     min_window = wl - ww // 2
     max_window = wl + ww // 2
-    mri_window = mri_hu.copy()
-    mri_window [mri_window  < min_window] = min_window
-    mri_window [mri_window  > max_window] = max_window
+    mri_window = mri_data.copy()
+    mri_window [mri_window > max_window] = max_window
+    mri_window [mri_window < min_window] = min_window
+    mri_window [(mri_window > min_window) & (mri_window < max_window)] = max_window * (mri_window [(mri_window > min_window) & (mri_window < max_window)] - min_window)/(max_window - min_window)
+    
     return mri_window
 
 
-def view_slices_window(mri_shape, mri_hu, view):
+def view_slices_window(mri_shape, mri_data, view, max_voxel):
     ''' 
     Outputs a figure where the slices of 1 view (sagittal, coronal or axial) can be viewed and windowing can be applied
 
@@ -166,25 +169,25 @@ def view_slices_window(mri_shape, mri_hu, view):
     plt.style.use('dark_background')
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
-    wl_init = 150
-    ww_init = 300
+    wl_init = max_voxel
+    ww_init = max_voxel*2
 
     if view == 'sag':
         max_slice = mri_shape[0]
         mid_slice = mri_shape[0]//2
-        l = plt.imshow(windowing(mri_hu, wl_init, ww_init)[mid_slice, :, :].T, cmap='gray', origin='lower')
+        l = plt.imshow(windowing(mri_data, wl_init, ww_init)[mid_slice, :, :].T, cmap='gray', origin='lower')
         slabel = 'Sagittal slices '
         
     if view == 'cor':
         max_slice = mri_shape[1]
         mid_slice = mri_shape[1]//2
-        l = plt.imshow(windowing(mri_hu, wl_init, ww_init)[:, mid_slice, :].T, cmap='gray', origin='lower')
+        l = plt.imshow(windowing(mri_data, wl_init, ww_init)[:, mid_slice, :].T, cmap='gray', origin='lower') 
         slabel = 'Coronal slices '
         
     if view == 'axi':
         max_slice = mri_shape[2]
         mid_slice = mri_shape[2]//2
-        l = plt.imshow(windowing(mri_hu, wl_init, ww_init)[:, :, mid_slice].T, cmap='gray', origin='lower')
+        l = plt.imshow(windowing(mri_data, wl_init, ww_init)[:, :, mid_slice].T, cmap='gray', origin='lower')
         slabel = 'Axial slices '
         
     plt.axis('off')
@@ -199,8 +202,8 @@ def view_slices_window(mri_shape, mri_hu, view):
     axiwindow_width = plt.axes([0.1, 0.25, 0.0225, 0.63])
     swidth=Slider(ax=axiwindow_width, 
         label='Window \n width ', 
-        valmin=0, 
-        valmax=500, 
+        valmin=1, 
+        valmax=max_voxel*2, 
         valstep=1, 
         valinit=ww_init,
         orientation="vertical")
@@ -208,8 +211,8 @@ def view_slices_window(mri_shape, mri_hu, view):
     axiwindow_level = plt.axes([0.2, 0.25, 0.0225, 0.63])
     slevel=Slider(ax=axiwindow_level, 
         label='Window \n level ', 
-        valmin=0, 
-        valmax=500, 
+        valmin=1, 
+        valmax=max_voxel, 
         valstep=1, 
         valinit=wl_init,
         orientation="vertical")
@@ -219,11 +222,11 @@ def view_slices_window(mri_shape, mri_hu, view):
         width=np.around(swidth.val)
         level=np.around(slevel.val)
         if view == 'sag':
-            l.set_data(windowing(mri_hu, level, width)[slice, :, :].T)
+            l.set_data(windowing(mri_data, level, width)[slice, :, :].T)
         if view == 'cor':
-            l.set_data(windowing(mri_hu, level, width)[:, slice, :].T)
+            l.set_data(windowing(mri_data, level, width)[:, slice, :].T)
         if view == 'axi':
-            l.set_data(windowing(mri_hu, level, width)[:, :, slice].T)
+            l.set_data(windowing(mri_data, level, width)[:, :, slice].T)
 
 
     sslice.on_changed(update)
@@ -233,7 +236,7 @@ def view_slices_window(mri_shape, mri_hu, view):
     plt.show()  
 
 
-def multi_view_window(mri_shape, mri_hu):
+def multi_view_window(mri_shape, mri_data, max_voxel):
     ''' 
     Outputs a figure where the slices of the 3 views (sagittal, coronal or axial) can be viewed 
 
@@ -241,8 +244,8 @@ def multi_view_window(mri_shape, mri_hu):
     mri_shape -- shape of the MRI array
     mri_hu -- MRI converted to HU
     '''
-    wl_init = 150
-    ww_init = 300
+    wl_init = max_voxel
+    ww_init = max_voxel*2
     
     max_slice_cor = mri_shape[1]
     max_slice_axi = mri_shape[2]
@@ -250,9 +253,9 @@ def multi_view_window(mri_shape, mri_hu):
     mid_slice_cor = mri_shape[1]//2
     max_slice_sag = mri_shape[0]
     mid_slice_axi = mri_shape[2]//2
-    sag_mid = windowing(mri_hu, wl_init, ww_init)[mri_shape[0]//2, :, :]
-    cor_mid = windowing(mri_hu, wl_init, ww_init)[:, mri_shape[1]//2, :]
-    axi_mid = windowing(mri_hu, wl_init, ww_init)[:, :, mri_shape[2]//2]
+    sag_mid = windowing(mri_data, wl_init, ww_init)[mri_shape[0]//2, :, :]
+    cor_mid = windowing(mri_data, wl_init, ww_init)[:, mri_shape[1]//2, :]
+    axi_mid = windowing(mri_data, wl_init, ww_init)[:, :, mri_shape[2]//2]
 
     plt.style.use('dark_background')
     fig, axes = plt.subplots(1,3)
@@ -266,8 +269,8 @@ def multi_view_window(mri_shape, mri_hu):
     axiwindow_width = plt.axes([0.05, 0.25, 0.0225, 0.63])
     swidth=Slider(ax=axiwindow_width, 
         label='Window \n width ', 
-        valmin=0, 
-        valmax=500, 
+        valmin=1, 
+        valmax=np.max(mri_data)*2, 
         valstep=1, 
         valinit=ww_init,
         orientation="vertical")
@@ -275,8 +278,8 @@ def multi_view_window(mri_shape, mri_hu):
     axiwindow_level = plt.axes([0.92, 0.25, 0.0225, 0.63])
     slevel=Slider(ax=axiwindow_level, 
         label='Window \n level ', 
-        valmin=0, 
-        valmax=500, 
+        valmin=1, 
+        valmax=np.max(mri_data), 
         valstep=1, 
         valinit=wl_init,
         orientation="vertical")
@@ -294,7 +297,7 @@ def multi_view_window(mri_shape, mri_hu):
         slice=np.around(sslice_sag.val)
         width=np.around(swidth.val)
         level=np.around(slevel.val)
-        l_sag.set_data(windowing(mri_hu, level, width)[slice, :, :].T)
+        l_sag.set_data(windowing(mri_data, level, width)[slice, :, :].T)
 
 
     sslice_sag.on_changed(update_sag)
@@ -314,7 +317,7 @@ def multi_view_window(mri_shape, mri_hu):
         slice=np.around(sslice_cor.val)
         width=np.around(swidth.val)
         level=np.around(slevel.val)
-        l_cor.set_data(windowing(mri_hu, level, width)[:, slice, :].T)
+        l_cor.set_data(windowing(mri_data, level, width)[:, slice, :].T)
 
 
     sslice_cor.on_changed(update_cor)
@@ -334,7 +337,7 @@ def multi_view_window(mri_shape, mri_hu):
         slice=np.around(sslice_axi.val)
         width=np.around(swidth.val)
         level=np.around(slevel.val)
-        l_axi.set_data(windowing(mri_hu, level, width)[:, :, slice].T)
+        l_axi.set_data(windowing(mri_data, level, width)[:, :, slice].T)
 
 
     sslice_axi.on_changed(update_axi)
