@@ -140,7 +140,7 @@ def windowing(mri_data, wl, ww):
     ''' 
     Computes windowing for MRI
     Arguments: 
-    mri_hu -- MRI converted to HU
+    mri_data --  MRI array
     wl -- window level
     ww -- window width
     Returns:
@@ -163,8 +163,9 @@ def view_slices_window(mri_shape, mri_data, view, max_voxel):
 
     Arguments: 
     mri_shape -- shape of the MRI array
-    mri_hu -- MRI converted to HU
+    mri_data --  MRI array
     view -- string containing the view to display
+    max_voxel -- maximum intensity of the MRI array 
     '''
     plt.style.use('dark_background')
     plt.subplots_adjust(left=0.25, bottom=0.25)
@@ -242,7 +243,8 @@ def multi_view_window(mri_shape, mri_data, max_voxel):
 
     Arguments: 
     mri_shape -- shape of the MRI array
-    mri_hu -- MRI converted to HU
+    mri_data --  MRI array
+    max_voxel -- maximum intensity of the MRI array 
     '''
     wl_init = max_voxel
     ww_init = max_voxel*2
