@@ -62,34 +62,29 @@ def check_coord(mri_coord, mri_data):
     Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP
     '''
     if mri_coord == ('L', 'I', 'P'):
-        mri_data = np.flip(mri_data, axis=0) # change L to R (RIP)
-        mri_data = np.flip(mri_data, axis=1) # change I to S (RSP)
-        mri_data = np.flip(mri_data, axis=2) # change P to A (RSA)
-        mri_data = np.swapaxes(mri_data, 1, 2) # swap S and A (RAS)
+        mri_data = np.flip(mri_data, axis=0)
+        mri_data = np.flip(mri_data, axis=1)
+        mri_data = np.flip(mri_data, axis=2)
+        mri_data = np.swapaxes(mri_data, 1, 2)
 
-    # NEED TO CHECK
     if mri_coord == ('L', 'A', 'S'):
-        mri_data = np.flip(mri_data, axis=0) # change L to R (RAS) 
+        mri_data = np.flip(mri_data, axis=0)
 
-    # NEED TO CHECK
     if mri_coord == ('L', 'S', 'A'):
-        mri_data = np.flip(mri_data, axis=0) # change L to R (RSA) 
-        mri_data = np.swapaxes(mri_data, 1, 2) # swap S and A (RAS)
+        mri_data = np.flip(mri_data, axis=0) 
+        mri_data = np.swapaxes(mri_data, 1, 2) 
     
-    # NEED TO CHECK
     if mri_coord == ('A', 'L', 'S'):
-        mri_data = np.flip(mri_data, axis=1) # change L to R (ARS)
-        mri_data = np.swapaxes(mri_data, 0, 1) # swap A nad L (RAS)
+        mri_data = np.flip(mri_data, axis=1) 
+        mri_data = np.swapaxes(mri_data, 0, 1)
     
-    # NEED TO CHECK
     if mri_coord == ('R', 'S', 'P'):
-        mri_data = np.flip(mri_data, axis=2) # change P to A (RSA)
-        mri_data = np.swapaxes(mri_data, 1, 2) # swap S nad P (RAS)
+        mri_data = np.flip(mri_data, axis=2) 
+        mri_data = np.swapaxes(mri_data, 1, 2)
     
-    # NEED TO CHECK
     if mri_coord == ('L', 'P', 'S'):
-        mri_data = np.flip(mri_data, axis=0) # change L to R (RPS)
-        mri_data = np.flip(mri_data, axis=1) # change P to A (RAS)
+        mri_data = np.flip(mri_data, axis=0)
+        mri_data = np.flip(mri_data, axis=1)
 
     mri_shape = np.asarray(mri_data.shape)
 
@@ -109,7 +104,7 @@ def display_info(mri_header, mri_affine, mri_coord, mri_data):
     # Display MRI general info
     print("""
     ############################
-    #### MRI Math Windowing ####
+    ##### Brain MRI Viewer #####
     ############################""")
     print("\n")
     print('MRI header\n', mri_header) 
@@ -172,13 +167,15 @@ def main():
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
 
-    if mri_header['dim'][0]==4 and args.volume==None:
+    if mri_header['dim'][0]==3:
+        mri_data=mri_data
+    elif mri_header['dim'][0]==4 and args.volume==None:
         print("\n Missing information!")
         print(" This MRI contatins :", mri_shape[-1], "volumes")
         print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
         parser.print_help()
         sys.exit()
-    elif mri_header['dim'][0]==4 and args.volume>=mri_shape[-1] or args.volume<0:
+    elif mri_header['dim'][0]==4 and (args.volume>=mri_shape[-1] or args.volume<=-1):
         print("\n Invalid volume!")
         print(" This MRI contatins :", mri_shape[-1], "volumes")
         print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
