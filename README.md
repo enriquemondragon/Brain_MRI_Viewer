@@ -18,6 +18,12 @@ You can clone the repository by using the command:
     $ git clone https://github.com/enriquemondragon/Brain_MRI_Viewer.git
 ```
 
+Then, in the project's folder, you can execute the Makefile to setup the project and activate the created environment:
+
+```
+    $ make
+    $ source venv/bin/activate
+```
 --------
 ## Usage
 By default when loading an MRI, you will be able to visualize all three views at the same time
