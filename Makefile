@@ -1,4 +1,4 @@
-.PHONY: run clean
+.PHONY: clean
 
 VENV = venv
 PYTHON = $(VENV)/bin/python3
@@ -10,5 +10,5 @@ $(VENV)/bin/activate: requirements.txt
 	$(PYTHON) setup.py install
 
 clean:
-	rm -rf __pycache__
+	rm -rf brain_mri_viewer/__pycache__
 	rm -rf $(VENV)
