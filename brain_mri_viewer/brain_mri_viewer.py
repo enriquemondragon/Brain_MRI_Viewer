@@ -59,7 +59,7 @@ def check_coord(mri_coord, mri_data):
     mri_data --  MRI array transformed to RAS coordinate system
     mri_shape -- shape of the MRI array in RAS coordinate system
 
-    Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP
+    Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP, LIA
     '''
     if mri_coord == ('L', 'I', 'P'):
         mri_data = np.flip(mri_data, axis=0)
@@ -85,6 +85,11 @@ def check_coord(mri_coord, mri_data):
     if mri_coord == ('L', 'P', 'S'):
         mri_data = np.flip(mri_data, axis=0)
         mri_data = np.flip(mri_data, axis=1)
+
+    if mri_coord == ('L', 'I', 'A'):
+        mri_data = np.flip(mri_data, axis=0)
+        mri_data = np.flip(mri_data, axis=1)
+        mri_data = np.swapaxes(mri_data, 1, 2)
 
     mri_shape = np.asarray(mri_data.shape)
 
@@ -163,6 +168,7 @@ def main():
     mri = nib.load(args.in_path)
     view = args.view 
 
+    MRI(mri)
     mri_header, mri_affine, mri_coord, mri_data, max_voxel = extract_info(mri)
     display_info(mri_header, mri_affine, mri_coord, mri_data)
     mri_data, mri_shape = check_coord(mri_coord, mri_data)
