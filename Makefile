@@ -8,6 +8,8 @@ $(VENV)/bin/activate: requirements.txt
 	python3 -m venv $(VENV)
 	$(PIP) install -r requirements.txt
 	$(PYTHON) setup.py install
+	$(PYTHON) -m build
+	$(PIP) install dist/*.whl
 
 clean:
 	rm -rf brain_mri_viewer/__pycache__
