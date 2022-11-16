@@ -25,138 +25,138 @@ import nibabel as nib
 from matplotlib.widgets import Slider, Button
 from view_slices import *
 
-def extract_info(mri):
-    ''' 
-    Extract general information from MRI 
+class MRI:
+    def __init__(self, mri):
+        self.mri = mri
 
-    Arguments: 
-    mri -- MRI NifTi file
+    def extract_info(self):
+        ''' 
+        Extract general information from MRI 
 
-    Returns:
-    mri_header --contains general information from the MRI
-    mri_affine -- affine matrix
-    mri_coord -- MRI coordinate system
-    mri_data --  MRI array
-    '''
-    mri_header = mri.header
-    mri_affine = mri.affine
-    mri_coord = nib.aff2axcodes(mri_affine)
-    x, y, z = mri_coord
-    mri_data = mri.get_fdata()
-    max_voxel = np.max(mri_data)
-    return mri_header, mri_affine, mri_coord, mri_data, max_voxel
+        Arguments: 
+        mri -- MRI NifTi file
 
-
-def check_coord(mri_coord, mri_data):
-    ''' 
-    Check the MRI's coordinate system and transforms it to RAS in case it is other
-
-    Arguments: 
-    mri_coord -- MRI coordinate system
-    mri_data --  MRI array
-
-    Returns:
-    mri_data --  MRI array transformed to RAS coordinate system
-    mri_shape -- shape of the MRI array in RAS coordinate system
-
-    Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP, LIA
-    '''
-    if mri_coord == ('L', 'I', 'P'):
-        mri_data = np.flip(mri_data, axis=0)
-        mri_data = np.flip(mri_data, axis=1)
-        mri_data = np.flip(mri_data, axis=2)
-        mri_data = np.swapaxes(mri_data, 1, 2)
-
-    if mri_coord == ('L', 'A', 'S'):
-        mri_data = np.flip(mri_data, axis=0)
-
-    if mri_coord == ('L', 'S', 'A'):
-        mri_data = np.flip(mri_data, axis=0) 
-        mri_data = np.swapaxes(mri_data, 1, 2) 
-    
-    if mri_coord == ('A', 'L', 'S'):
-        mri_data = np.flip(mri_data, axis=1) 
-        mri_data = np.swapaxes(mri_data, 0, 1)
-    
-    if mri_coord == ('R', 'S', 'P'):
-        mri_data = np.flip(mri_data, axis=2) 
-        mri_data = np.swapaxes(mri_data, 1, 2)
-    
-    if mri_coord == ('L', 'P', 'S'):
-        mri_data = np.flip(mri_data, axis=0)
-        mri_data = np.flip(mri_data, axis=1)
-
-    if mri_coord == ('L', 'I', 'A'):
-        mri_data = np.flip(mri_data, axis=0)
-        mri_data = np.flip(mri_data, axis=1)
-        mri_data = np.swapaxes(mri_data, 1, 2)
-
-    mri_shape = np.asarray(mri_data.shape)
-
-    return mri_data, mri_shape
+        Returns:
+        mri_header --contains general information from the MRI
+        mri_affine -- affine matrix
+        mri_coord -- MRI coordinate system
+        mri_data --  MRI array
+        '''
+        self.mri_header = self.mri.header
+        self.mri_affine = self.mri.affine
+        self.mri_coord = nib.aff2axcodes(self.mri_affine)
+        x, y, z = self.mri_coord
+        self.mri_data = self.mri.get_fdata()
+        self.max_voxel = np.max(self.mri_data)
 
 
-def display_info(mri_header, mri_affine, mri_coord, mri_data):
-    ''' 
-    Display general information from the MRI
+    def check_coord(self):
+        ''' 
+        Check the MRI's coordinate system and transforms it to RAS in case it is other
 
-    Arguments: 
-    mri_header --contains general information from the MRI
-    mri_affine -- affine matrix
-    mri_coord -- MRI coordinate system
-    mri_data --  MRI array
-    '''
-    # Display MRI general info
-    print("""
-    ############################
-    ##### Brain MRI Viewer #####
-    ############################""")
-    print("\n")
-    print('MRI header\n', mri_header) 
-    print("\n")
-    print('MRI affine\n', mri_affine)
-    print("\n")
-    print('MRI coordinate system\n', mri_coord)
-    print("\n")
-    # print('MRI data\n', mri_data)
-    # print("\n")
-    print('MRI data type: ', type(mri_data))
-    print('MRI dtype: ', mri_data.dtype)
-    print('min voxel intensity: ', np.min(mri_data))
-    print('max voxel intensity: ', np.max(mri_data))
-    print('MRI shape: ', mri_data.shape)
-    print('MRI dim: ', mri_data.ndim)
+        Arguments: 
+        mri_coord -- MRI coordinate system
+        mri_data --  MRI array
+
+        Returns:
+        mri_data --  MRI array transformed to RAS coordinate system
+        mri_shape -- shape of the MRI array in RAS coordinate system
+
+        Note: types of coordinate systems that check: RAS, LAS, LSA, ALS, RSP, LPS, LIP, LIA
+        '''
+        if self.mri_coord == ('L', 'I', 'P'):
+            self.mri_data = np.flip(self.mri_data, axis=0)
+            self.mri_data = np.flip(self.mri_data, axis=1)
+            self.mri_data = np.flip(self.mri_data, axis=2)
+            self.mri_data = np.swapaxes(self.mri_data, 1, 2)
+
+        if self.mri_coord == ('L', 'A', 'S'):
+            self.mri_data = np.flip(self.mri_data, axis=0)
+
+        if self.mri_coord == ('L', 'S', 'A'):
+            self.mri_data = np.flip(self.mri_data, axis=0) 
+            self.mri_data = np.swapaxes(self.mri_data, 1, 2) 
+
+        if self.mri_coord == ('A', 'L', 'S'):
+            self.mri_data = np.flip(self.mri_data, axis=1) 
+            self.mri_data = np.swapaxes(mri_data, 0, 1)
+
+        if self.mri_coord == ('R', 'S', 'P'):
+            mri_data = np.flip(self.mri_data, axis=2) 
+            mri_data = np.swapaxes(self.mri_data, 1, 2)
+
+        if self.mri_coord == ('L', 'P', 'S'):
+            self.mri_data = np.flip(self.mri_data, axis=0)
+            self.mri_data = np.flip(self.mri_data, axis=1)
+
+        if self.mri_coord == ('L', 'I', 'A'):
+            self.mri_data = np.flip(self.mri_data, axis=0)
+            self.mri_data = np.flip(self.mri_data, axis=1)
+            self.mri_data = np.swapaxes(self.mri_data, 1, 2)
+
+        self.mri_shape = np.asarray(self.mri_data.shape)
 
 
-def visualize_img(mri_data, mri_shape):
-    '''
-    Outputs an image of the mid slices of the MRI in each view (sagittal, coronal and axial)
+    def display_info(self):
+        ''' 
+        Display general information from the MRI
 
-    Arguments:
-    mri_data --  MRI array
-    mri_shape -- shape of the MRI array
-    '''
+        Arguments: 
+        mri_header --contains general information from the MRI
+        mri_affine -- affine matrix
+        mri_coord -- MRI coordinate system
+        mri_data --  MRI array
+        '''
+        # Display MRI general info
+        print("""
+        ============================
+        ===== Brain MRI Viewer =====
+        ============================""")
+        print("\n")
+        print('MRI header\n', self.mri_header) 
+        print("\n")
+        print('MRI affine\n', self.mri_affine)
+        print("\n")
+        print('MRI coordinate system\n', self.mri_coord)
+        print("\n")
+        # print('MRI data\n', mri_data)
+        # print("\n")
+        print('MRI data type: ', type(self.mri_data))
+        print('MRI dtype: ', self.mri_data.dtype)
+        print('min voxel intensity: ', np.min(self.mri_data))
+        print('max voxel intensity: ', np.max(self.mri_data))
+        print('MRI shape: ', self.mri_data.shape)
+        print('MRI dim: ', self.mri_data.ndim)
 
-    sag_mid = mri_data[mri_shape[0]//2, :, :]
-    cor_mid = mri_data[:, mri_shape[1]//2, :]
-    axi_mid = mri_data[:, :, mri_shape[2]//2]
 
-    slices = [sag_mid, cor_mid, axi_mid]
-    plt.style.use('dark_background')
-    fig, axes = plt.subplots(1,len(slices))
-    for i, slice in enumerate(slices):
-        axes[i].imshow(slice.T, cmap='gray', origin='lower')
-        axes[i].axis('off')
+    def visualize_img(mri_data, mri_shape):
+        '''
+        Outputs an image of the mid slices of the MRI in each view (sagittal, coronal and axial)
 
-    axes[0].set_title('Sagittal view')
-    axes[1].set_title('Coronal view')
-    axes[2].set_title('Axial view')
-    plt.show()
-    return
+        Arguments:
+        mri_data --  MRI array
+        mri_shape -- shape of the MRI array
+        '''
+
+        sag_mid = mri_data[mri_shape[0]//2, :, :]
+        cor_mid = mri_data[:, mri_shape[1]//2, :]
+        axi_mid = mri_data[:, :, mri_shape[2]//2]
+
+        slices = [sag_mid, cor_mid, axi_mid]
+        plt.style.use('dark_background')
+        fig, axes = plt.subplots(1,len(slices))
+        for i, slice in enumerate(slices):
+            axes[i].imshow(slice.T, cmap='gray', origin='lower')
+            axes[i].axis('off')
+
+        axes[0].set_title('Sagittal view')
+        axes[1].set_title('Coronal view')
+        axes[2].set_title('Axial view')
+        plt.show()
 
 
 def main():
-    parser = argparse.ArgumentParser(description=' ################ Brain MRI Viewer ################', usage='%(prog)s [--input] [options]')
+    parser = argparse.ArgumentParser(description=' ========== Brain MRI Viewer by Enrique Mondragon Estrada 2022 ==========', usage='%(prog)s [--input] [options]')
     parser.add_argument('-in', '--input', type=str, required=True, help='MRIs file path', dest='in_path')
     parser.add_argument('-v', '--view', type=str, choices=['multiview', 'sag', 'cor', 'axi'], default='multiview', dest='view', help='select view [sag, cor, axi, multiview]')
     parser.add_argument('-img', '--image', action='store_true', dest='img', help='shows MRIs image')
@@ -168,27 +168,28 @@ def main():
     mri = nib.load(args.in_path)
     view = args.view 
 
-    MRI(mri)
-    mri_header, mri_affine, mri_coord, mri_data, max_voxel = extract_info(mri)
-    display_info(mri_header, mri_affine, mri_coord, mri_data)
-    mri_data, mri_shape = check_coord(mri_coord, mri_data)
+    mri = MRI(mri)
+    mri.extract_info()
+    mri.check_coord()
+    mri.display_info()
 
-    if mri_header['dim'][0]==3:
-        mri_data=mri_data
-    elif mri_header['dim'][0]==4 and args.volume==None:
+
+    if mri.mri_header['dim'][0]==3:
+        mri.mri_data=mri.mri_data
+    elif mri.mri_header['dim'][0]==4 and args.volume==None:
         print("\n Missing information!")
-        print(" This MRI contatins :", mri_shape[-1], "volumes")
-        print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
+        print(" This MRI contatins :", mri.mri_shape[-1], "volumes")
+        print(" You should select one volume within the range [0, ", mri.mri_shape[-1]-1, "] \n")
         parser.print_help()
         sys.exit()
-    elif mri_header['dim'][0]==4 and (args.volume>=mri_shape[-1] or args.volume<=-1):
+    elif mri.mri_header['dim'][0]==4 and (args.volume>=mri.mri_shape[-1] or args.volume<=-1):
         print("\n Invalid volume!")
-        print(" This MRI contatins :", mri_shape[-1], "volumes")
-        print(" You should select one volume within the range [0, ", mri_shape[-1]-1, "] \n")
+        print(" This MRI contatins :", mri.mri_shape[-1], "volumes")
+        print(" You should select one volume within the range [0, ", mri.mri_shape[-1]-1, "] \n")
         parser.print_help()
         sys.exit()
     else:
-         mri_data=mri_data[:,:,:,args.volume]
+         mri.mri_data=mri.mri_data[:,:,:,args.volume]
 
     if args.window and args.img == False:
         print("\n")
@@ -198,7 +199,7 @@ def main():
         def rescale(a ,x, b):
             return a * x + b
 
-            
+  
         def hounsfield(mri, mri_data):
             '''
             Transforms MRI to Hounsfield units (HU) by rescaling it
@@ -216,21 +217,21 @@ def main():
             slope = mri.dataobj.slope
             mri_hu = rescale(mri_data, slope, intercept)
             return mri_hu
+    
 
-
-        mri_hu = hounsfield(mri, mri_data)
+        mri_hu = hounsfield(mri, mri.mri_data)
         if args.view != 'multiview':
-            view_slices_window(mri_shape, mri_data, view, max_voxel)
+            view_slices_window(mri.mri_shape, mri.mri_data, view, mri.max_voxel)
         else:
-            multi_view_window(mri_shape, mri_data, max_voxel)
+            multi_view_window(mri.mri_shape, mri.mri_data, mri.max_voxel)
     else:
         if args.img:
-            visualize_img(mri_data, mri_shape)
+            mri.visualize_img()
         elif args.view != 'multiview':
-            view_slices(mri_shape, mri_data, view)
+            view_slices(mri.mri_shape, mri.mri_data, view)
         else:
-            multi_view(mri_shape, mri_data)
-
-
+            multi_view(mri.mri_shape, mri.mri_data)
+  
+    
 if __name__ == "__main__":
     main()
